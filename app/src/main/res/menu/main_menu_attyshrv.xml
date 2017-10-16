@@ -14,23 +14,6 @@
 
         <menu>
 
-            <item android:title="ECG analysis">
-                <menu>
-                    <item
-                        android:id="@+id/plotWindowOff"
-                        android:title="off" />
-                    <item
-                        android:id="@+id/plotWindowBPM"
-                        android:title="Heart rate" />
-                    <item
-                        android:id="@+id/plotWindowVector"
-                        android:title="Vector ECG" />
-                    <item
-                        android:id="@+id/plotWindowHRV"
-                        android:title="HRV" />
-                </menu>
-            </item>
-
             <group android:checkableBehavior="all">
                 <item
                     android:id="@+id/showEinthoven"
@@ -41,9 +24,9 @@
                     android:checked="true"
                     android:title="Show Augmented leads" />
                 <item
-                    android:id="@+id/notch"
+                    android:id="@+id/plotWindowBPM"
                     android:checked="false"
-                    android:title="Enable mains filter" />
+                    android:title="Heart rate plot" />
             </group>
 
             <item

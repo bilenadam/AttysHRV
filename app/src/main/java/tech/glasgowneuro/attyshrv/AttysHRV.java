@@ -508,8 +508,6 @@ public class AttysHRV extends AppCompatActivity {
         setSupportActionBar(myToolbar);
 
         int nChannels = AttysComm.NCHANNELS;
-        iirNotch_II = new Butterworth();
-        iirNotch_III = new Butterworth();
         actualChannelIdx = new int[nChannels];
         highpass_II = new Highpass();
         highpass_III = new Highpass();
@@ -604,6 +602,13 @@ public class AttysHRV extends AppCompatActivity {
 
         highpass_II.setAlpha(1.0F / attysComm.getSamplingRateInHz());
         highpass_III.setAlpha(1.0F / attysComm.getSamplingRateInHz());
+
+        iirNotch_II = new Butterworth();
+        iirNotch_III = new Butterworth();
+        iirNotch_II.bandStop(notchOrder,
+                attysComm.getSamplingRateInHz(), powerlineHz, notchBW);
+        iirNotch_III.bandStop(notchOrder,
+                attysComm.getSamplingRateInHz(), powerlineHz, notchBW);
 
         realtimePlotView = (RealtimePlotView) findViewById(R.id.realtimeplotview);
         realtimePlotView.setMaxChannels(15);
@@ -869,7 +874,7 @@ public class AttysHRV extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main_menu_attysecg, menu);
+        getMenuInflater().inflate(R.menu.main_menu_attyshrv, menu);
 
         return true;
     }
@@ -950,42 +955,30 @@ public class AttysHRV extends AppCompatActivity {
                 enterFilename();
                 return true;
 
-            case R.id.notch:
-                if (iirNotch_II == null) {
-                    iirNotch_II = new Butterworth();
-                    iirNotch_III = new Butterworth();
-                    iirNotch_II.bandStop(notchOrder,
-                            attysComm.getSamplingRateInHz(), powerlineHz, notchBW);
-                    iirNotch_III.bandStop(notchOrder,
-                            attysComm.getSamplingRateInHz(), powerlineHz, notchBW);
-                } else {
-                    iirNotch_II = null;
-                    iirNotch_III = null;
-                }
-                item.setChecked(iirNotch_II != null);
-                return true;
-
             case R.id.plotWindowBPM:
 
-                deletePlotWindow();
-                // Create a new Fragment to be placed in the activity layout
-                heartratePlotFragment = new HeartratePlotFragment();
-                // Add the fragment to the 'fragment_container' FrameLayout
+                if (item.isChecked()) {
+                        hidePlotFragment();
+                        deletePlotWindow();
+                        item.setChecked(false);
+                        return true;
+                } else {
+                    deletePlotWindow();
+                    // Create a new Fragment to be placed in the activity layout
+                    heartratePlotFragment = new HeartratePlotFragment();
+                    // Add the fragment to the 'fragment_container' FrameLayout
 /*                if (Log.isLoggable(TAG, Log.DEBUG)) {
                     Log.d(TAG, "Adding heartrate fragment");
                 }*/
 
-                getSupportFragmentManager().beginTransaction()
-                        .add(R.id.fragment_plot_container, heartratePlotFragment, "heartratePlotFragment")
-                        .commit();
-                showPlotFragment();
-                plotWindowContent = PlotWindowContent.BPM;
-                return true;
-
-            case R.id.plotWindowOff:
-                hidePlotFragment();
-                deletePlotWindow();
-                return true;
+                    getSupportFragmentManager().beginTransaction()
+                            .add(R.id.fragment_plot_container, heartratePlotFragment, "heartratePlotFragment")
+                            .commit();
+                    showPlotFragment();
+                    plotWindowContent = PlotWindowContent.BPM;
+                    item.setChecked(true);
+                    return true;
+                }
 
             case R.id.filebrowser:
                 shareData();

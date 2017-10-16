@@ -30,12 +30,6 @@ public class Highpass {
         a = alpha;
     }
 
-    public void setActive(boolean active) {
-        isActive = active;
-    }
-
-    public boolean getIsActive() {return isActive;}
-
     public float filter(float v) {
         dc = a * v + (1 - a) * dc;
         if (isActive) {
