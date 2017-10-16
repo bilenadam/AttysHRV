@@ -77,7 +77,6 @@ public class AttysHRV extends AppCompatActivity {
     private HRVView hrvView = null;
     private HeartratePlotFragment heartratePlotFragment = null;
 
-    private BluetoothAdapter BA;
     private AttysComm attysComm = null;
     private BluetoothDevice btAttysDevice = null;
     private byte samplingRate = AttysComm.ADC_RATE_250HZ;
@@ -99,26 +98,14 @@ public class AttysHRV extends AppCompatActivity {
     private boolean showAugmented = true;
     private float filtBPM = 0;
 
-    private String bpmFromEinthovenLeadNo = "II";
-
     private ECG_rr_det ecg_rr_det_ch1 = null;
     private ECG_rr_det ecg_rr_det_ch2 = null;
 
     private float ytick = 0;
 
     private int[] actualChannelIdx;
-    private int notch;
-
-    public enum PlotWindowContent {
-        NONE,
-        BPM,
-        VECTOR,
-        HRV
-    }
 
     int ygapForInfo = 0;
-
-    private PlotWindowContent plotWindowContent = PlotWindowContent.NONE;
 
     // debugging the ECG detector, commented out for production
     //double ecgDetOut;
@@ -143,7 +130,6 @@ public class AttysHRV extends AppCompatActivity {
     private File attysdir = null;
 
     ProgressDialog progress = null;
-
 
 
     public class DataRecorder {
@@ -378,11 +364,11 @@ public class AttysHRV extends AppCompatActivity {
                             // I-II+III = 0
                             float I = II - III;
 
-                            float aVR = III/2 - II;
-                            float aVL = II/2 - III;
-                            float aVF = II/2 + III/2;
+                            float aVR = III / 2 - II;
+                            float aVL = II / 2 - III;
+                            float aVF = II / 2 + III / 2;
 
-                            dataRecorder.saveData(I,II,III,aVR,aVL,aVF);
+                            dataRecorder.saveData(I, II, III, aVR, aVL, aVF);
 
                             int nRealChN = 0;
                             if (showEinthoven) {
@@ -452,14 +438,14 @@ public class AttysHRV extends AppCompatActivity {
                         realtimePlotView.stopAddSamples();
                     }
 
-                    if (hrvView != null) {
-                        runOnUiThread(new Runnable(){
-                            @Override
-                            public void run(){
-                                hrvView.setHeartRate(filtBPM,attysComm.getSamplingRateInHz()/2);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            if ((attysComm != null)&&(hrvView != null)) {
+                                hrvView.setHeartRate(filtBPM, attysComm.getSamplingRateInHz() / 2);
                             }
-                        });
-                    }
+                        }
+                    });
                 }
             }
         }
@@ -497,12 +483,7 @@ public class AttysHRV extends AppCompatActivity {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LOCKED);
         }
 
-
-
-
-
         setContentView(R.layout.main_activity_layout);
-
 
         Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
         setSupportActionBar(myToolbar);
@@ -531,20 +512,9 @@ public class AttysHRV extends AppCompatActivity {
 
     }
 
-    private void setDefaultUIState(){
-
-
+    private void setDefaultUIState() {
         hidePlotFragment();
         deletePlotWindow();
-
-            if (iirNotch_II == null) {
-                iirNotch_II = new Butterworth();
-                iirNotch_III = new Butterworth();
-                iirNotch_II.bandStop(notchOrder,
-                        attysComm.getSamplingRateInHz(), powerlineHz, notchBW);
-                iirNotch_III.bandStop(notchOrder,
-                        attysComm.getSamplingRateInHz(), powerlineHz, notchBW);
-            }
     }
 
     @Override
@@ -641,8 +611,6 @@ public class AttysHRV extends AppCompatActivity {
             public void haveRpeak(long samplenumber, float bpm, float bpmUnfilt, double amplitude, double confidence) {
                 if (ecg_rr_det_ch1.getAmplitude() > ecg_rr_det_ch2.getAmplitude()) {
                     saveBPM(bpm);
-                    bpmFromEinthovenLeadNo = "II";
-                    //Log.d(TAG,"RR det ch2");
                 }
             }
         });
@@ -654,8 +622,6 @@ public class AttysHRV extends AppCompatActivity {
             public void haveRpeak(long samplenumber, float bpm, float bpmUnfilt, double amplitude, double confidence) {
                 if (ecg_rr_det_ch2.getAmplitude() > ecg_rr_det_ch1.getAmplitude()) {
                     saveBPM(bpm);
-                    bpmFromEinthovenLeadNo = "III";
-                    //Log.d(TAG,"RR det ch3");
                 }
             }
         });
@@ -921,15 +887,7 @@ public class AttysHRV extends AppCompatActivity {
                         }
                         java.io.FileNotFoundException e = dataRecorder.startRec(file);
                         if (e != null) {
-/*                            if (Log.isLoggable(TAG, Log.DEBUG)) {
-                                Log.d(TAG, "Could not open data file: " + e.getMessage());
-                            }*/
                             return true;
-                        }
-                        if (dataRecorder.isRecording()) {
-/*                            if (Log.isLoggable(TAG, Log.DEBUG)) {
-                                Log.d(TAG, "Saving to " + file.getAbsolutePath());
-                            }*/
                         }
                     } else {
                         Toast.makeText(getApplicationContext(),
@@ -967,29 +925,19 @@ public class AttysHRV extends AppCompatActivity {
                 return true;
 
             case R.id.plotWindowBPM:
-
-                if (item.isChecked()) {
-                        hidePlotFragment();
-                        deletePlotWindow();
-                        item.setChecked(false);
-                        return true;
+                if (heartratePlotFragment != null) {
+                    hidePlotFragment();
+                    deletePlotWindow();
                 } else {
                     deletePlotWindow();
-                    // Create a new Fragment to be placed in the activity layout
                     heartratePlotFragment = new HeartratePlotFragment();
-                    // Add the fragment to the 'fragment_container' FrameLayout
-/*                if (Log.isLoggable(TAG, Log.DEBUG)) {
-                    Log.d(TAG, "Adding heartrate fragment");
-                }*/
-
                     getSupportFragmentManager().beginTransaction()
                             .add(R.id.fragment_plot_container, heartratePlotFragment, "heartratePlotFragment")
                             .commit();
                     showPlotFragment();
-                    plotWindowContent = PlotWindowContent.BPM;
-                    item.setChecked(true);
-                    return true;
                 }
+                item.setChecked(heartratePlotFragment != null);
+                return true;
 
             case R.id.filebrowser:
                 shareData();

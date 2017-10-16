@@ -27,6 +27,7 @@ public class HRVView extends View {
     private final int MAXSAMPLES = 400, STROKEWIDTH = 2, INNERCIRCLEWIDTH = 40;
     private float heartRate = 60, maxHR = 70, minHR=50;
     private float txtSizeMult = (float) 1.4;
+    private float prevHR = 0;
     private ArrayList<Float> HRVValues;
     private int[] ringsColours;
     private float[] ringsStops;
@@ -153,19 +154,21 @@ public class HRVView extends View {
 
     public synchronized void setHeartRate(float rad, float samplingRate){
 //        heartRate = (int) rad;
-        HRVValues.add(rad);
+        if (Math.abs(prevHR - rad)<40) {
+            HRVValues.add(rad);
 
-        if(HRVValues.size() > MAXSAMPLES){
-            HRVValues.remove(0);
+            if (HRVValues.size() > MAXSAMPLES) {
+                HRVValues.remove(0);
+            }
+
+            maxHR = Math.max(rad, maxHR);
+            minHR = Math.min(rad, minHR);
+            maxHR = maxHR - HRVDecayConst * maxHR / samplingRate;
+            minHR = minHR + HRVDecayConst * minHR / samplingRate;
+
+            invalidate();
         }
-
-        maxHR = Math.max(rad, maxHR);
-        minHR = Math.min(rad, minHR);
-        maxHR = maxHR - HRVDecayConst * maxHR / samplingRate;
-        minHR = minHR + HRVDecayConst * minHR / samplingRate;
-
-        invalidate();
-
+        prevHR = rad;
         //Log.d(TAG, "minHR: " + minHR + " maxHR: " + maxHR);
     }
 

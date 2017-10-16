@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:title="Heartrate plot"
+        android:id="@+id/hrplotfragoptionmenu">
+        <menu>
+            <item
+                android:id="@+id/hrplotfragmentreset"
+                android:title="Reset" />
+            <group android:checkableBehavior="all">
+                <item
+                    android:checked="false"
+                    android:checkable="true"
+                    android:id="@+id/hrplotfragmentautoscale"
+                    android:title="Autoscale" />
+                <item
+                    android:checkable="true"
+                    android:checked="true"
+                    android:id="@+id/hrplotfragmentstats"
+                    android:title="Show stats" />
+            </group>
+        </menu>
+    </item>
+</menu>
