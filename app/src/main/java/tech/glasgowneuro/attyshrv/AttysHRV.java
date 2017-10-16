@@ -880,6 +880,15 @@ public class AttysHRV extends AppCompatActivity {
     }
 
 
+    private void checkRealtimePlotVis() {
+        boolean vis = showEinthoven || showAugmented;
+        if (vis) {
+            realtimePlotView.setVisibility(View.VISIBLE);
+        } else {
+            realtimePlotView.setVisibility(View.INVISIBLE);
+        }
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
@@ -932,11 +941,13 @@ public class AttysHRV extends AppCompatActivity {
             case R.id.showEinthoven:
                 showEinthoven = !showEinthoven;
                 item.setChecked(showEinthoven);
+                checkRealtimePlotVis();
                 return true;
 
             case R.id.showAugmented:
                 showAugmented = !showAugmented;
                 item.setChecked(showAugmented);
+                checkRealtimePlotVis();
                 return true;
 
             case R.id.Ch1gain200:
