@@ -21,24 +21,6 @@ import com.androidplot.xy.SimpleXYSeries;
 import com.androidplot.xy.StepMode;
 import com.androidplot.xy.XYPlot;
 
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.CompoundButton;
-import android.widget.TextView;
-import android.widget.ToggleButton;
-
-import com.androidplot.xy.BoundaryMode;
-import com.androidplot.xy.LineAndPointFormatter;
-import com.androidplot.xy.SimpleXYSeries;
-import com.androidplot.xy.StepMode;
-import com.androidplot.xy.XYPlot;
 
 
 /**
@@ -57,7 +39,6 @@ public class HeartratePlotFragment extends Fragment {
 
     private XYPlot bpmPlot = null;
 
-    private TextView bpmText = null;
     private TextView statsText = null;
 
     private Button bpmResetButton = null;
@@ -89,12 +70,11 @@ public class HeartratePlotFragment extends Fragment {
 
         // setup the APR Levels plot:
         bpmPlot = (XYPlot) view.findViewById(R.id.bpmPlotView);
-        bpmText = (TextView) view.findViewById(R.id.bpmTextView);
         statsText = (TextView) view.findViewById(R.id.statsTextView);
 
-        bpmHistorySeries = new SimpleXYSeries(""); //("Heart rate / beats per minute");
+        bpmHistorySeries = new SimpleXYSeries("Heart rate / beats per minute");
         bpmHistorySeries.useImplicitXVals();
-        bpmFullSeries = new SimpleXYSeries(""); //"Heart rate / beats per minute");
+        bpmFullSeries = new SimpleXYSeries("Heart rate / beats per minute");
         bpmFullSeries.useImplicitXVals();
 
         bpmPlot.setRangeBoundaries(0, 200, BoundaryMode.FIXED);
@@ -184,18 +164,6 @@ public class HeartratePlotFragment extends Fragment {
 
     public synchronized void addValue(final float v) {
 
-        final String bpmString =  String.format("%03d BPM", (int) v);
-        if (getActivity() != null) {
-            getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    if (bpmText != null) {
-                        bpmText.setText(bpmString);
-                    }
-                }
-            });
-        }
-
         if (bpmFullSeries == null) return;
 
         float sum = 0;
@@ -215,7 +183,7 @@ public class HeartratePlotFragment extends Fragment {
                         bpmFullSeries.getY(i + 1).floatValue()), 2);
             }
             rms = rms / bpmFullSeries.size();
-            final String statsString = String.format("avg = %3.02f BPM, sd = %3.02f, rmssd = %3.02f",
+            final String statsString = String.format("avg = %3.02f, sd = %3.02f, rmssd = %3.02f",
                     avg, dev, rms);
             if (getActivity() != null) {
                 getActivity().runOnUiThread(new Runnable() {
@@ -241,8 +209,6 @@ public class HeartratePlotFragment extends Fragment {
                 });
             }
         }
-
-        final String finalBPMString = bpmString;
 
         if (bpmHistorySeries == null) {
             if (Log.isLoggable(TAG, Log.VERBOSE)) {

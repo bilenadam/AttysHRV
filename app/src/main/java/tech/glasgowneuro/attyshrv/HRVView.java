@@ -28,7 +28,7 @@ public class HRVView extends View {
     private float heartRate = 60, maxHR = 70, minHR=50;
     private float txtSizeMult = (float) 1.4;
     private float prevHR = 0;
-    private ArrayList<Float> HRVValues;
+    private ArrayList<Float> HRVValues = null;
     private int[] ringsColours;
     private float[] ringsStops;
     private int alphas[];
@@ -70,6 +70,7 @@ public class HRVView extends View {
         paintTxt = new Paint();
         paintTxt.setColor(Color.argb(255, 255, 255, 0));
         paintRings = new Paint();
+        HRVValues = new ArrayList<Float>();
 
         maxCircleRadius  = Math.min(getHeight(), getWidth()) / 2F;
         maxCircleRadius  = 1000F;
@@ -89,6 +90,10 @@ public class HRVView extends View {
 
         }
 //        ringsShader = new RadialGradient(1280, 1280, maxCircleRadius, ringsColours, ringsStops, Shader.TileMode.CLAMP);
+    }
+
+    public void reset() {
+        init();
     }
 
     @Override

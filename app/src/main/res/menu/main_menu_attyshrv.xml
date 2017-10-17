@@ -22,8 +22,7 @@
         android:title="File Browser"
         app:showAsAction="never" />
 
-    <item
-        android:title="gain">
+    <item android:title="gain">
 
         <menu>
             <item
@@ -49,10 +48,13 @@
             android:checked="true"
             android:title="Show Augmented leads" />
         <item
-            android:id="@+id/plotWindowBPM"
-            android:checked="false"
-            android:title="Heartrate plot" />
+            android:id="@+id/showAnimation"
+            android:checked="true"
+            android:title="Show HRV animation" />
     </group>
 
+    <item
+        android:id="@+id/plotWindowBPM"
+        android:title="Toggle Heartrate plot" />
 
 </menu>

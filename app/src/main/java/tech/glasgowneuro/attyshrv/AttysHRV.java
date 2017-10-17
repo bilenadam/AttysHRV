@@ -18,7 +18,6 @@ package tech.glasgowneuro.attyshrv;
 
 import android.Manifest;
 import android.app.ProgressDialog;
-import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -26,7 +25,6 @@ import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -36,6 +34,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -96,6 +95,7 @@ public class AttysHRV extends AppCompatActivity {
 
     private boolean showEinthoven = true;
     private boolean showAugmented = true;
+    private boolean showHRVanimation = true;
     private float filtBPM = 0;
 
     private ECG_rr_det ecg_rr_det_ch1 = null;
@@ -282,19 +282,6 @@ public class AttysHRV extends AppCompatActivity {
 
     private class UpdatePlotTask extends TimerTask {
 
-        private void resetAnalysis() {
-            annotatePlot();
-        }
-
-        private void annotatePlot() {
-            String small = "";
-            small = small + "".format("x = 1sec/div, y = %1.04fV/div", ytick);
-            if (dataRecorder.isRecording()) {
-                small = small + " !!RECORDING to:" + dataFilename;
-            }
-        }
-
-
         public synchronized void run() {
 
             if (attysComm != null) {
@@ -319,7 +306,6 @@ public class AttysHRV extends AppCompatActivity {
 
                 float max = attysComm.getADCFullScaleRange(0) / gain;
                 ytick = 1.0F / gain / 10;
-                annotatePlot();
 
                 int n = 0;
                 if (attysComm != null) {
@@ -479,9 +465,7 @@ public class AttysHRV extends AppCompatActivity {
             attysdir.mkdirs();
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LOCKED);
-        }
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LOCKED);
 
         setContentView(R.layout.main_activity_layout);
 
@@ -516,14 +500,6 @@ public class AttysHRV extends AppCompatActivity {
         hidePlotFragment();
         deletePlotWindow();
     }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-
-        updatePlotTask.resetAnalysis();
-    }
-
 
     private void saveBPM(float bpm) {
         dataRecorder.setBPM(bpm);
@@ -589,12 +565,16 @@ public class AttysHRV extends AppCompatActivity {
                     @Override
                     public void touchedChannel(int chNo) {
                         try {
-                            // theChannelWeDoAnalysis = actualChannelIdx[chNo];
-                            updatePlotTask.resetAnalysis();
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    hrvView.reset();
+                                }
+                            });
                         } catch (Exception e) {
-/*                            if (Log.isLoggable(TAG, Log.ERROR)) {
+                            if (Log.isLoggable(TAG, Log.ERROR)) {
                                 Log.e(TAG, "Exception in the TouchEventListener (BUG!):", e);
-                            }*/
+                            }
                         }
                     }
                 });
@@ -628,7 +608,6 @@ public class AttysHRV extends AppCompatActivity {
 
         timer = new Timer();
         updatePlotTask = new UpdatePlotTask();
-        updatePlotTask.resetAnalysis();
         timer.schedule(updatePlotTask, 0, REFRESH_IN_MS);
     }
 
@@ -907,6 +886,15 @@ public class AttysHRV extends AppCompatActivity {
                 item.setChecked(showAugmented);
                 checkRealtimePlotVis();
                 return true;
+
+            case R.id.showAnimation:
+                showHRVanimation = !showHRVanimation;
+                item.setChecked(showHRVanimation);
+                if (showHRVanimation) {
+                    hrvView.setVisibility(View.VISIBLE);
+                } else {
+                    hrvView.setVisibility(View.INVISIBLE);
+                }
 
             case R.id.Ch1gain200:
                 gain = 200;

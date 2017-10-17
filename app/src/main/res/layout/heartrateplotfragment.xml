@@ -7,28 +7,21 @@
     android:layout_height="fill_parent">
 
     <TextView
-        android:text="000 BPM"
-        android:textColor="#00FFFF"
-        android:gravity="end"
-        android:id="@+id/bpmTextView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textSize="18sp" />
-
-    <TextView
+        android:paddingLeft="5sp"
         android:text="avg=, nsd=, nrmssd="
         android:textColor="#00FFFF"
-        android:gravity="end"
+        android:gravity="start"
         android:id="@+id/statsTextView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textSize="18sp" />
+        android:layout_height="wrap_content" />
 
     <com.androidplot.xy.XYPlot
         style="@style/APDefacto.Dark"
         android:id="@+id/bpmPlotView"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+        android:scaleX="0.9"
+        android:scaleY="0.9"
         ap:title="Heart rate (BPM)"
         ap:rangeTitle="range"
         ap:domainTitle="domain"
