@@ -60,6 +60,9 @@ public class ECG_rr_det {
     // previous timestamp
     private long t2 = 0;
 
+    // previously detected heartrate
+    private float prevBPM = 0;
+
     // timewindow not to detect an R peak
     private int doNotDetect = 0;
 
@@ -196,10 +199,22 @@ public class ECG_rr_det {
                         unfiltBPM = bpm;
                         System.arraycopy(hrBuffer, 0, sortBuffer, 0, hrBuffer.length);
                         Arrays.sort(sortBuffer);
-                        filtBPM = sortBuffer[medianFilterSize / 2];
+                        filtBPM = sortBuffer[(int)Math.floor(medianFilterSize / 2)];
                         if (filtBPM > 0) {
-                            // Log.d(TAG,"h="+h+",amplitude="+amplitude+" bpm="+filtBPM);
-                            rrListener.haveRpeak(timestamp, filtBPM, unfiltBPM, amplitude, h / threshold);
+                            // still missed a heartbeat?
+                            if (Math.abs(filtBPM*2-prevBPM)<10) {
+                                // that's most likely a missed heartbeat because it's
+                                // exactly half of the previous heartrate
+                                ignoreRRvalue = 2;
+                            } else {
+                                if (rrListener != null) {
+                                    rrListener.haveRpeak(timestamp,
+                                            filtBPM,
+                                            unfiltBPM,
+                                            amplitude, h / threshold);
+                                }
+                            }
+                            prevBPM = filtBPM;
                         }
                     }
                 } else {

@@ -16,6 +16,8 @@ import android.view.View;
 import java.util.ArrayList;
 import java.util.ListIterator;
 
+import uk.me.berndporr.iirj.Butterworth;
+
 
 /**
  * Created by Paul Miller on 06/02/17.
@@ -25,9 +27,8 @@ public class HRVView extends View {
     final String TAG = "HRVView";
 
     private final int MAXSAMPLES = 400, STROKEWIDTH = 2, INNERCIRCLEWIDTH = 40;
-    private float heartRate = 60, maxHR = 0, minHR=0;
+    private float heartRate = 60, maxHR = 0, minHR = 0;
     private float txtSizeMult = (float) 1.4;
-    private float prevHR = 0;
     private ArrayList<Float> HRVValues = null;
     private int[] ringsColours;
     private float[] ringsStops;
@@ -42,23 +43,26 @@ public class HRVView extends View {
     private Paint paintTxt = null;
     private Paint paintRings = null;
 
+    Butterworth smoothFilter = null;
+
     private RadialGradient ringsShader;
 
-    public HRVView(Context context){
+    public HRVView(Context context) {
         super(context);
         init();
     }
 
-    public HRVView(Context context, AttributeSet attrs){
+    public HRVView(Context context, AttributeSet attrs) {
         super(context, attrs);
         init();
     }
-    public HRVView(Context context, AttributeSet attrs, int defStyle){
+
+    public HRVView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         init();
     }
 
-    private void init(){
+    private void init() {
         paintWhite = new Paint();
         paintWhite.setColor(Color.WHITE);
         paintBlack = new Paint();
@@ -72,24 +76,22 @@ public class HRVView extends View {
         paintRings = new Paint();
         HRVValues = new ArrayList<Float>();
 
-        maxCircleRadius  = Math.min(getHeight(), getWidth()) / 2F;
-        maxCircleRadius  = 1000F;
+        maxCircleRadius = Math.min(getHeight(), getWidth()) / 2F;
+        maxCircleRadius = 1000F;
 //        Log.d(TAG, "maxCircleRadius: " + maxCircleRadius + " Height: " + getHeight() + " Width: " + getWidth());
 
         ringsColours = new int[MAXSAMPLES];
         ringsStops = new float[MAXSAMPLES];
         alphas = new int[MAXSAMPLES];
 
-        for (int i=0; i< MAXSAMPLES; i++){
-//            ringsColours[i] = Color.argb(128, 255 * i/MAXSAMPLES, 255 * i/MAXSAMPLES, 255 * i/MAXSAMPLES);
-            ringsStops[i] = i / (float)MAXSAMPLES;
-            alphas[i] = (int)(220F-(220F*ringsStops[i]*ringsStops[i]));
-//            alphas[i] = (int)(220F-(220F*Math.pow( (i / (((float)MAXSAMPLES - 1F))), 0.25)));
+        for (int i = 0; i < MAXSAMPLES; i++) {
+            ringsStops[i] = i / (float) MAXSAMPLES;
+            alphas[i] = (int) (220F - (220F * ringsStops[i] * ringsStops[i]));
             HRVValues.add(heartRate);
 //            Log.d(TAG, "Colour: " +  255 * i/MAXSAMPLES + " Stops: " + ringsStops[i] + " alpha: " + alphas[i]);
-
         }
-//        ringsShader = new RadialGradient(1280, 1280, maxCircleRadius, ringsColours, ringsStops, Shader.TileMode.CLAMP);
+        smoothFilter = new Butterworth();
+        smoothFilter.lowPass(2, 1, 0.05);
     }
 
     public void reset() {
@@ -99,7 +101,7 @@ public class HRVView extends View {
     }
 
     @Override
-    protected void onDraw(Canvas canvas){
+    protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
         ArrayList<Float> TempHRVValues = new ArrayList<Float>(HRVValues);
@@ -111,28 +113,17 @@ public class HRVView extends View {
         int txtDiv = 25;
         Rect bounds = new Rect();
         String HRVTxt = "";
-        HRVTxt = HRVTxt + "".format("%d", (int)heartRate);
+        HRVTxt = HRVTxt + "".format("%d", (int) heartRate);
         int centreX = getWidth() / 2;
         int centreY = getHeight() / 2;
-        paintTxt.setTextSize((float)INNERCIRCLEWIDTH * txtSizeMult);
+        paintTxt.setTextSize((float) INNERCIRCLEWIDTH * txtSizeMult);
 
         int i = MAXSAMPLES - 1;
-        while (li.hasNext()){
-            heartRate = (float) li.next();
-
-            // todo: replace this with a lookup table calculated during init()
-//            paintCircle.setColor(heartRateToColour(heartRate));
-
-
-            ringsColours[i] = heartRateToColour(heartRate, i);
-
-
-
-//            Log.d(TAG, "RadiusList = " + li.previous());
-//            canvas.drawCircle(centreX, centreY, INNERCIRCLEWIDTH + i * STROKEWIDTH, paintClear);
-//            canvas.drawCircle(centreX, centreY, INNERCIRCLEWIDTH + i * STROKEWIDTH, paintCircle);
+        while (li.hasNext()) {
+            float hr = (float) li.next();
+            hr = (float)smoothFilter.filter(hr);
+            ringsColours[i] = heartRateToColour((float) hr, i);
             i--;
-
         }
 
         ringsShader = new RadialGradient(centreX, centreY, maxCircleRadius, ringsColours, ringsStops, Shader.TileMode.CLAMP);
@@ -145,43 +136,36 @@ public class HRVView extends View {
     }
 
 
-    private int heartRateToColour(float HR, int index){
+    private int heartRateToColour(float HR, int index) {
 
         // normalise HR
-
         HR = 5F + 250F * (HR - minHR) / (maxHR - minHR);
         HR = Math.max(HR, 0F);
         HR = Math.min(HR, 255F);
-        // lookup colour in colourmap
-        //int alpha = (int)(200F * (float)(index + 1F - MAXSAMPLES) / (float)MAXSAMPLES);
 
-        return Color.argb(alphas[index], (int) (HR /1.8), (int) (HR / 1.5), (int) (HR / 1.01));
-
+        return Color.argb(alphas[index], (int) (HR / 1.8), (int) (HR / 1.5), (int) (HR / 1.01));
     }
 
-    public synchronized void setHeartRate(float rad, float samplingRate){
-//        heartRate = (int) rad;
+    public synchronized void setHeartRate(float _heartRate, float samplingRate) {
+        heartRate = _heartRate;
         // eliminates missing heartbeats and crazy jumps in the heartbeat
-        if ((Math.abs(prevHR - rad)<70) && (Math.abs(prevHR-rad*2)>5)) {
-            HRVValues.add(rad);
+        HRVValues.add(_heartRate);
 
-            if (HRVValues.size() > MAXSAMPLES) {
-                HRVValues.remove(0);
-            }
-
-            if ((maxHR < 10) && (minHR<10)) {
-                maxHR = rad+10;
-                minHR = rad-10;
-            } else {
-                maxHR = Math.max(rad, maxHR);
-                minHR = Math.min(rad, minHR);
-                maxHR = maxHR - HRVDecayConst * maxHR / samplingRate;
-                minHR = minHR + HRVDecayConst * minHR / samplingRate;
-            }
-
-            invalidate();
+        if (HRVValues.size() > MAXSAMPLES) {
+            HRVValues.remove(0);
         }
-        prevHR = rad;
+
+        if ((maxHR < 10) && (minHR < 10)) {
+            maxHR = _heartRate + 10;
+            minHR = _heartRate - 10;
+        } else {
+            maxHR = Math.max(_heartRate, maxHR);
+            minHR = Math.min(_heartRate, minHR);
+            maxHR = maxHR - HRVDecayConst * maxHR / samplingRate;
+            minHR = minHR + HRVDecayConst * minHR / samplingRate;
+        }
+
+        invalidate();
         //Log.d(TAG, "minHR: " + minHR + " maxHR: " + maxHR);
     }
 
