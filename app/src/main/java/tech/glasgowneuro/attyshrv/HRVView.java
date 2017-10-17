@@ -18,14 +18,14 @@ import java.util.ListIterator;
 
 
 /**
- * Created by paul on 06/02/17.
+ * Created by Paul Miller on 06/02/17.
  */
 
 public class HRVView extends View {
     final String TAG = "HRVView";
 
     private final int MAXSAMPLES = 400, STROKEWIDTH = 2, INNERCIRCLEWIDTH = 40;
-    private float heartRate = 60, maxHR = 70, minHR=50;
+    private float heartRate = 60, maxHR = 0, minHR=0;
     private float txtSizeMult = (float) 1.4;
     private float prevHR = 0;
     private ArrayList<Float> HRVValues = null;
@@ -93,6 +93,8 @@ public class HRVView extends View {
     }
 
     public void reset() {
+        maxHR = 0;
+        minHR = 0;
         init();
     }
 
@@ -159,17 +161,23 @@ public class HRVView extends View {
 
     public synchronized void setHeartRate(float rad, float samplingRate){
 //        heartRate = (int) rad;
-        if (Math.abs(prevHR - rad)<40) {
+        // eliminates missing heartbeats and crazy jumps in the heartbeat
+        if ((Math.abs(prevHR - rad)<70) && (Math.abs(prevHR-rad*2)>5)) {
             HRVValues.add(rad);
 
             if (HRVValues.size() > MAXSAMPLES) {
                 HRVValues.remove(0);
             }
 
-            maxHR = Math.max(rad, maxHR);
-            minHR = Math.min(rad, minHR);
-            maxHR = maxHR - HRVDecayConst * maxHR / samplingRate;
-            minHR = minHR + HRVDecayConst * minHR / samplingRate;
+            if ((maxHR < 10) && (minHR<10)) {
+                maxHR = rad+10;
+                minHR = rad-10;
+            } else {
+                maxHR = Math.max(rad, maxHR);
+                minHR = Math.min(rad, minHR);
+                maxHR = maxHR - HRVDecayConst * maxHR / samplingRate;
+                minHR = minHR + HRVDecayConst * minHR / samplingRate;
+            }
 
             invalidate();
         }
