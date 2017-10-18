@@ -297,7 +297,7 @@ public class AttysHRV extends AppCompatActivity {
             }
 
             int nCh = 0;
-            if (attysComm != null) nCh = attysComm.NCHANNELS;
+            if (attysComm != null) nCh = AttysComm.NCHANNELS;
             if (attysComm != null) {
                 float[] tmpSample = new float[nCh];
                 float[] tmpMin = new float[nCh];
@@ -981,9 +981,9 @@ public class AttysHRV extends AppCompatActivity {
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 
         mux = AttysComm.ADC_MUX_ECG_EINTHOVEN;
-        attysComm.setAdc1_gain_index(attysComm.ADC_GAIN_6);
+        attysComm.setAdc1_gain_index(AttysComm.ADC_GAIN_6);
         attysComm.setAdc0_mux_index(mux);
-        attysComm.setAdc2_gain_index(attysComm.ADC_GAIN_6);
+        attysComm.setAdc2_gain_index(AttysComm.ADC_GAIN_6);
         attysComm.setAdc1_mux_index(mux);
 
         byte data_separator = (byte) (Integer.parseInt(prefs.getString("data_separator", "0")));
@@ -994,7 +994,7 @@ public class AttysHRV extends AppCompatActivity {
             Log.d(TAG, "powerline=" + powerlineHz);
         }*/
 
-        attysComm.setAdc_samplingrate_index(attysComm.ADC_RATE_250HZ);
+        attysComm.setAdc_samplingrate_index(AttysComm.ADC_RATE_250HZ);
     }
 
 }
