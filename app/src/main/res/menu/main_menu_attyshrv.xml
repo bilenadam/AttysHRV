@@ -40,13 +40,9 @@
 
     <group android:checkableBehavior="all">
         <item
-            android:id="@+id/showEinthoven"
+            android:id="@+id/showECG"
             android:checked="true"
-            android:title="Show Einthoven" />
-        <item
-            android:id="@+id/showAugmented"
-            android:checked="true"
-            android:title="Show Augmented leads" />
+            android:title="Show ECG" />
         <item
             android:id="@+id/showAnimation"
             android:checked="true"

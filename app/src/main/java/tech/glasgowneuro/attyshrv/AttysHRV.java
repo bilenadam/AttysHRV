@@ -1,5 +1,6 @@
 /**
- * Copyright 2016 Bernd Porr, mail@berndporr.me.uk
+ * Copyright 2016-2017 Bernd Porr, mail@berndporr.me.uk
+ * Copyright 2016-2017 Paul Miller, nlholdem@hotmail.com
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +40,7 @@ import android.util.SparseBooleanArray;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
@@ -93,8 +95,7 @@ public class AttysHRV extends AppCompatActivity {
     private int notchOrder = 2;
     private float powerlineHz = 50;
 
-    private boolean showEinthoven = true;
-    private boolean showAugmented = true;
+    private boolean showECG = true;
     private boolean showHRVanimation = true;
     private float filtBPM = 0;
 
@@ -357,57 +358,53 @@ public class AttysHRV extends AppCompatActivity {
                             dataRecorder.saveData(I, II, III, aVR, aVL, aVF);
 
                             int nRealChN = 0;
-                            if (showEinthoven) {
-                                if (attysComm != null) {
-                                    tmpMin[nRealChN] = -max;
-                                    tmpMax[nRealChN] = max;
-                                    tmpTick[nRealChN] = ytick;
-                                    tmpLabels[nRealChN] = labels[0];
-                                    actualChannelIdx[nRealChN] = 0;
-                                    tmpSample[nRealChN++] = I;
-                                }
-                                if (attysComm != null) {
-                                    tmpMin[nRealChN] = -max;
-                                    tmpMax[nRealChN] = max;
-                                    tmpTick[nRealChN] = ytick;
-                                    tmpLabels[nRealChN] = labels[1];
-                                    actualChannelIdx[nRealChN] = 1;
-                                    tmpSample[nRealChN++] = II;
-                                }
-                                if (attysComm != null) {
-                                    tmpMin[nRealChN] = -max;
-                                    tmpMax[nRealChN] = max;
-                                    tmpTick[nRealChN] = ytick;
-                                    tmpLabels[nRealChN] = labels[2];
-                                    actualChannelIdx[nRealChN] = 2;
-                                    tmpSample[nRealChN++] = III;
-                                }
+                            if (attysComm != null) {
+                                tmpMin[nRealChN] = -max;
+                                tmpMax[nRealChN] = max;
+                                tmpTick[nRealChN] = ytick;
+                                tmpLabels[nRealChN] = labels[0];
+                                actualChannelIdx[nRealChN] = 0;
+                                tmpSample[nRealChN++] = I;
                             }
-                            if (showAugmented) {
-                                if (attysComm != null) {
-                                    tmpMin[nRealChN] = -max;
-                                    tmpMax[nRealChN] = max;
-                                    tmpTick[nRealChN] = ytick;
-                                    tmpLabels[nRealChN] = labels[3];
-                                    actualChannelIdx[nRealChN] = 3;
-                                    tmpSample[nRealChN++] = aVR;
-                                }
-                                if (attysComm != null) {
-                                    tmpMin[nRealChN] = -max;
-                                    tmpMax[nRealChN] = max;
-                                    tmpTick[nRealChN] = ytick;
-                                    tmpLabels[nRealChN] = labels[4];
-                                    actualChannelIdx[nRealChN] = 4;
-                                    tmpSample[nRealChN++] = aVL;
-                                }
-                                if (attysComm != null) {
-                                    tmpMin[nRealChN] = -max;
-                                    tmpMax[nRealChN] = max;
-                                    tmpTick[nRealChN] = ytick;
-                                    tmpLabels[nRealChN] = labels[5];
-                                    actualChannelIdx[nRealChN] = 5;
-                                    tmpSample[nRealChN++] = aVF;
-                                }
+                            if (attysComm != null) {
+                                tmpMin[nRealChN] = -max;
+                                tmpMax[nRealChN] = max;
+                                tmpTick[nRealChN] = ytick;
+                                tmpLabels[nRealChN] = labels[1];
+                                actualChannelIdx[nRealChN] = 1;
+                                tmpSample[nRealChN++] = II;
+                            }
+                            if (attysComm != null) {
+                                tmpMin[nRealChN] = -max;
+                                tmpMax[nRealChN] = max;
+                                tmpTick[nRealChN] = ytick;
+                                tmpLabels[nRealChN] = labels[2];
+                                actualChannelIdx[nRealChN] = 2;
+                                tmpSample[nRealChN++] = III;
+                            }
+                            if (attysComm != null) {
+                                tmpMin[nRealChN] = -max;
+                                tmpMax[nRealChN] = max;
+                                tmpTick[nRealChN] = ytick;
+                                tmpLabels[nRealChN] = labels[3];
+                                actualChannelIdx[nRealChN] = 3;
+                                tmpSample[nRealChN++] = aVR;
+                            }
+                            if (attysComm != null) {
+                                tmpMin[nRealChN] = -max;
+                                tmpMax[nRealChN] = max;
+                                tmpTick[nRealChN] = ytick;
+                                tmpLabels[nRealChN] = labels[4];
+                                actualChannelIdx[nRealChN] = 4;
+                                tmpSample[nRealChN++] = aVL;
+                            }
+                            if (attysComm != null) {
+                                tmpMin[nRealChN] = -max;
+                                tmpMax[nRealChN] = max;
+                                tmpTick[nRealChN] = ytick;
+                                tmpLabels[nRealChN] = labels[5];
+                                actualChannelIdx[nRealChN] = 5;
+                                tmpSample[nRealChN++] = aVF;
                             }
 
                             if (realtimePlotView != null) {
@@ -427,7 +424,7 @@ public class AttysHRV extends AppCompatActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            if ((attysComm != null)&&(hrvView != null)) {
+                            if ((attysComm != null) && (hrvView != null)) {
                                 hrvView.setHeartRate(filtBPM, attysComm.getSamplingRateInHz() / 2);
                             }
                         }
@@ -524,7 +521,7 @@ public class AttysHRV extends AppCompatActivity {
         if (btAttysDevice == null) {
             new AlertDialog.Builder(this)
                     .setTitle("No Attys Found")
-                    .setMessage("Visit www.attys.tech for help and you can buy it directly from there.")
+                    .setMessage("Visit www.attys.tech for help.")
                     .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int whichButton) {
                             String url = "http://www.attys.tech";
@@ -760,11 +757,14 @@ public class AttysHRV extends AppCompatActivity {
         }
 
         final List files = new ArrayList();
+        if (attysdir == null) return;
         final String[] list = attysdir.list();
-        for (String file : list) {
-            if (files != null) {
-                if (file != null) {
-                    files.add(file);
+        if (list != null) {
+            for (String file : list) {
+                if (files != null) {
+                    if (file != null) {
+                        files.add(file);
+                    }
                 }
             }
         }
@@ -813,6 +813,15 @@ public class AttysHRV extends AppCompatActivity {
                     }
                 })
                 .show();
+
+        if (listview != null) {
+            ViewGroup.LayoutParams layoutParams = listview.getLayoutParams();
+            Screensize screensize = new Screensize(getWindowManager());
+            layoutParams.height = screensize.getHeightInPixels() / 2;
+            listview.setLayoutParams(layoutParams);
+        }
+
+
     }
 
 
@@ -824,15 +833,6 @@ public class AttysHRV extends AppCompatActivity {
         return true;
     }
 
-
-    private void checkRealtimePlotVis() {
-        boolean vis = showEinthoven || showAugmented;
-        if (vis) {
-            realtimePlotView.setVisibility(View.VISIBLE);
-        } else {
-            realtimePlotView.setVisibility(View.INVISIBLE);
-        }
-    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -875,16 +875,15 @@ public class AttysHRV extends AppCompatActivity {
                 }
                 return true;
 
-            case R.id.showEinthoven:
-                showEinthoven = !showEinthoven;
-                item.setChecked(showEinthoven);
-                checkRealtimePlotVis();
-                return true;
-
-            case R.id.showAugmented:
-                showAugmented = !showAugmented;
-                item.setChecked(showAugmented);
-                checkRealtimePlotVis();
+            case R.id.showECG:
+                showECG = !showECG;
+                item.setChecked(showECG);
+                if (showECG) {
+                    realtimePlotView.resetX();
+                    realtimePlotView.setVisibility(View.VISIBLE);
+                } else {
+                    realtimePlotView.setVisibility(View.INVISIBLE);
+                }
                 return true;
 
             case R.id.showAnimation:
@@ -982,10 +981,9 @@ public class AttysHRV extends AppCompatActivity {
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 
         mux = AttysComm.ADC_MUX_ECG_EINTHOVEN;
-        byte adcgain = (byte) (Integer.parseInt(prefs.getString("gainpref", "0")));
-        attysComm.setAdc1_gain_index(adcgain);
+        attysComm.setAdc1_gain_index(attysComm.ADC_GAIN_6);
         attysComm.setAdc0_mux_index(mux);
-        attysComm.setAdc2_gain_index(adcgain);
+        attysComm.setAdc2_gain_index(attysComm.ADC_GAIN_6);
         attysComm.setAdc1_mux_index(mux);
 
         byte data_separator = (byte) (Integer.parseInt(prefs.getString("data_separator", "0")));
@@ -996,10 +994,7 @@ public class AttysHRV extends AppCompatActivity {
             Log.d(TAG, "powerline=" + powerlineHz);
         }*/
 
-        samplingRate = (byte) Integer.parseInt(prefs.getString("samplingrate", "0"));
-        if (samplingRate > 1) samplingRate = 1;
-
-        attysComm.setAdc_samplingrate_index(samplingRate);
+        attysComm.setAdc_samplingrate_index(attysComm.ADC_RATE_250HZ);
     }
 
 }

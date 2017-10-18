@@ -8,10 +8,11 @@
 
     <TextView
         android:paddingLeft="5sp"
-        android:text="avg=, nsd=, nrmssd="
+        android:text=""
         android:textColor="#00FFFF"
         android:gravity="start"
         android:id="@+id/statsTextView"
+        android:textSize="12dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
@@ -23,8 +24,7 @@
         android:scaleX="0.9"
         android:scaleY="0.9"
         ap:title="Heart rate (BPM)"
-        ap:rangeTitle="range"
-        ap:domainTitle="domain"
+        ap:domainTitle="heartbeat #"
         ap:lineLabels="left|bottom"
         ap:lineLabelRotationBottom="-45" />
 

@@ -110,13 +110,12 @@ public class HRVView extends View {
 
         canvas.drawPaint(paintClear);
 
-        int txtDiv = 25;
-        Rect bounds = new Rect();
-        String HRVTxt = "";
-        HRVTxt = HRVTxt + "".format("%d", (int) heartRate);
+        String hrvTxt = String.format("%d", (int) heartRate);
         int centreX = getWidth() / 2;
         int centreY = getHeight() / 2;
         paintTxt.setTextSize((float) INNERCIRCLEWIDTH * txtSizeMult);
+        Rect bounds = new Rect();
+        paintTxt.getTextBounds(hrvTxt, 0, hrvTxt.length(), bounds);
 
         int i = MAXSAMPLES - 1;
         while (li.hasNext()) {
@@ -129,7 +128,10 @@ public class HRVView extends View {
         ringsShader = new RadialGradient(centreX, centreY, maxCircleRadius, ringsColours, ringsStops, Shader.TileMode.CLAMP);
         paintRings.setShader(ringsShader);
         canvas.drawCircle(centreX, centreY, maxCircleRadius, paintRings);
-        canvas.drawText(HRVTxt, centreX - INNERCIRCLEWIDTH / 2, centreY + INNERCIRCLEWIDTH / 2, paintTxt);
+        canvas.drawText(hrvTxt,
+                centreX - bounds.width()/2,
+                centreY + bounds.height()/2,
+                paintTxt);
 //        Log.d(TAG, "Width: " + centreX + " Height: " + centreY);
 
         Log.d(TAG, "HeartRate:  " + heartRate + " Color: " + paintCircle.getColor() + " i: " + i);

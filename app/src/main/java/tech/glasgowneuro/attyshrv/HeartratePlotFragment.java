@@ -72,9 +72,9 @@ public class HeartratePlotFragment extends Fragment {
         bpmPlot = (XYPlot) view.findViewById(R.id.bpmPlotView);
         statsText = (TextView) view.findViewById(R.id.statsTextView);
 
-        bpmHistorySeries = new SimpleXYSeries("Heart rate / beats per minute");
+        bpmHistorySeries = new SimpleXYSeries("Heart rate / bpm");
         bpmHistorySeries.useImplicitXVals();
-        bpmFullSeries = new SimpleXYSeries("Heart rate / beats per minute");
+        bpmFullSeries = new SimpleXYSeries("Heart rate / bpm");
         bpmFullSeries.useImplicitXVals();
 
         bpmPlot.setRangeBoundaries(0, 200, BoundaryMode.FIXED);
@@ -82,21 +82,14 @@ public class HeartratePlotFragment extends Fragment {
         bpmPlot.addSeries(bpmHistorySeries,
                 new LineAndPointFormatter(
                         Color.rgb(100, 255, 255), null, null, null));
-        bpmPlot.setDomainLabel("Heartbeat number");
         bpmPlot.setRangeLabel(null);
-
-        Screensize screensize = new Screensize(getActivity().getWindowManager());
-
-        if (screensize.isTablet()) {
-            bpmPlot.setDomainStep(StepMode.INCREMENT_BY_VAL, 25);
-        } else {
-            bpmPlot.setDomainStep(StepMode.INCREMENT_BY_VAL, 50);
-        }
 
         Paint paint = new Paint();
         paint.setColor(Color.argb(128, 0, 255, 0));
         bpmPlot.getGraph().setDomainGridLinePaint(paint);
         bpmPlot.getGraph().setRangeGridLinePaint(paint);
+
+        checkScales();
 
         return view;
 
@@ -106,6 +99,31 @@ public class HeartratePlotFragment extends Fragment {
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.hrvplotoptions, menu);
+    }
+
+
+    private void checkScales() {
+        Screensize screensize = new Screensize(getActivity().getWindowManager());
+        if (autoscale) {
+            if (screensize.isTablet()) {
+                bpmPlot.setRangeStep(StepMode.INCREMENT_BY_VAL, 5);
+            } else {
+                bpmPlot.setRangeStep(StepMode.INCREMENT_BY_VAL, 20);
+            }
+            bpmPlot.setRangeBoundaries(0, 200, BoundaryMode.AUTO);
+        } else {
+            if (screensize.isTablet()) {
+                bpmPlot.setRangeStep(StepMode.INCREMENT_BY_VAL, 25);
+            } else {
+                bpmPlot.setRangeStep(StepMode.INCREMENT_BY_VAL, 50);
+            }
+            bpmPlot.setRangeBoundaries(0, 200, BoundaryMode.FIXED);
+        }
+        if (screensize.isTablet()) {
+            bpmPlot.setDomainStep(StepMode.INCREMENT_BY_VAL, 10);
+        } else {
+            bpmPlot.setDomainStep(StepMode.INCREMENT_BY_VAL, 25);
+        }
     }
 
 
@@ -125,22 +143,7 @@ public class HeartratePlotFragment extends Fragment {
             case R.id.hrplotfragmentautoscale:
                 autoscale = !autoscale;
                 item.setChecked(autoscale);
-                Screensize screensize = new Screensize(getActivity().getWindowManager());
-                if (autoscale) {
-                    if (screensize.isTablet()) {
-                        bpmPlot.setRangeStep(StepMode.INCREMENT_BY_VAL, 5);
-                    } else {
-                        bpmPlot.setRangeStep(StepMode.INCREMENT_BY_VAL, 20);
-                    }
-                    bpmPlot.setRangeBoundaries(0, 200, BoundaryMode.AUTO);
-                } else {
-                    if (screensize.isTablet()) {
-                        bpmPlot.setRangeStep(StepMode.INCREMENT_BY_VAL, 25);
-                    } else {
-                        bpmPlot.setRangeStep(StepMode.INCREMENT_BY_VAL, 50);
-                    }
-                    bpmPlot.setRangeBoundaries(0, 200, BoundaryMode.FIXED);
-                }
+                checkScales();
                 bpmPlot.redraw();
                 return true;
 
@@ -183,7 +186,7 @@ public class HeartratePlotFragment extends Fragment {
                         bpmFullSeries.getY(i + 1).floatValue()), 2);
             }
             rms = rms / bpmFullSeries.size();
-            final String statsString = String.format("avg = %3.02f, sd = %3.02f, rmssd = %3.02f",
+            final String statsString = String.format("average = %3.02f, sd = %3.02f, rmssd = %3.02f",
                     avg, dev, rms);
             if (getActivity() != null) {
                 getActivity().runOnUiThread(new Runnable() {
