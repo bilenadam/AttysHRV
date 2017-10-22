@@ -42,8 +42,8 @@ public class ECG_rr_det {
     // notch order of the powerline filter
     private final int notchOrder = 2;
 
-    // 0.5mV as the thereshold the bandpass filtered ECG is an artefact
-    private double artefact_threshold = 1;
+    // 10mV as the threshold the bandpass filtered ECG is an artefact
+    private double artefact_threshold = 10;
 
     // ignores 1000 samples to let the filter settle
     private int ignoreECGdetector = 1000;
@@ -202,10 +202,10 @@ public class ECG_rr_det {
                         filtBPM = sortBuffer[(int)Math.floor(medianFilterSize / 2)];
                         if (filtBPM > 0) {
                             // still missed a heartbeat?
-                            if (Math.abs(filtBPM*2-prevBPM)<10) {
+                            if (Math.abs(filtBPM*2-prevBPM)<5) {
                                 // that's most likely a missed heartbeat because it's
                                 // exactly half of the previous heartrate
-                                ignoreRRvalue = 2;
+                                ignoreRRvalue = 3;
                             } else {
                                 if (rrListener != null) {
                                     rrListener.haveRpeak(timestamp,
