@@ -45,8 +45,6 @@ public class HRVView extends View {
 
     Butterworth smoothFilter = null;
 
-    private RadialGradient ringsShader;
-
     public HRVView(Context context) {
         super(context);
         init();
@@ -125,7 +123,7 @@ public class HRVView extends View {
             i--;
         }
 
-        ringsShader = new RadialGradient(centreX, centreY, maxCircleRadius, ringsColours, ringsStops, Shader.TileMode.CLAMP);
+        RadialGradient ringsShader = new RadialGradient(centreX, centreY, maxCircleRadius, ringsColours, ringsStops, Shader.TileMode.CLAMP);
         paintRings.setShader(ringsShader);
         canvas.drawCircle(centreX, centreY, maxCircleRadius, paintRings);
         canvas.drawText(hrvTxt,
@@ -134,7 +132,7 @@ public class HRVView extends View {
                 paintTxt);
 //        Log.d(TAG, "Width: " + centreX + " Height: " + centreY);
 
-        Log.d(TAG, "HeartRate:  " + heartRate + " Color: " + paintCircle.getColor() + " i: " + i);
+        // Log.d(TAG, "HeartRate:  " + heartRate + " Color: " + paintCircle.getColor() + " i: " + i);
     }
 
 
