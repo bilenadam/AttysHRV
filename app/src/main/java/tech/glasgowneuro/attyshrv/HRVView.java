@@ -12,6 +12,7 @@ import android.graphics.Shader;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewTreeObserver;
 
 import java.util.ArrayList;
 import java.util.ListIterator;
@@ -39,7 +40,6 @@ public class HRVView extends View {
     private Paint paintClear = null;
     private Paint paintWhite = null;
     private Paint paintBlack = null;
-    private Paint paintCircle = null;
     private Paint paintTxt = null;
     private Paint paintRings = null;
 
@@ -65,7 +65,6 @@ public class HRVView extends View {
         paintWhite.setColor(Color.WHITE);
         paintBlack = new Paint();
         paintBlack.setColor(Color.BLACK);
-        paintCircle = new Paint();
         paintClear = new Paint();
         paintClear.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
         HRVValues = new ArrayList<>();
@@ -90,6 +89,7 @@ public class HRVView extends View {
         }
         smoothFilter = new Butterworth();
         smoothFilter.lowPass(2, 1, 0.05);
+
     }
 
     public void reset() {
@@ -102,9 +102,7 @@ public class HRVView extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        ArrayList<Float> TempHRVValues = new ArrayList<Float>(HRVValues);
-
-        ListIterator li = TempHRVValues.listIterator();
+        ListIterator li = HRVValues.listIterator();
 
         canvas.drawPaint(paintClear);
 
@@ -122,9 +120,13 @@ public class HRVView extends View {
             ringsColours[i] = heartRateToColour(hr, i);
             i--;
         }
-
-        RadialGradient ringsShader = new RadialGradient(centreX, centreY, maxCircleRadius, ringsColours, ringsStops, Shader.TileMode.CLAMP);
-        paintRings.setShader(ringsShader);
+        paintRings.setShader(new RadialGradient(
+                centreX,
+                centreY,
+                maxCircleRadius,
+                ringsColours,
+                ringsStops,
+                Shader.TileMode.CLAMP));
         canvas.drawCircle(centreX, centreY, maxCircleRadius, paintRings);
         canvas.drawText(hrvTxt,
                 centreX - bounds.width()/2,
