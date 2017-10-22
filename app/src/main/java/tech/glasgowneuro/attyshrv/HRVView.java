@@ -121,7 +121,7 @@ public class HRVView extends View {
         while (li.hasNext()) {
             float hr = (float) li.next();
             hr = (float)smoothFilter.filter(hr);
-            ringsColours[i] = heartRateToColour((float) hr, i);
+            ringsColours[i] = heartRateToColour(hr, i);
             i--;
         }
 
