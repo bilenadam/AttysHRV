@@ -18,7 +18,6 @@
 package tech.glasgowneuro.attyshrv;
 
 import android.Manifest;
-import android.app.ProgressDialog;
 import android.bluetooth.BluetoothDevice;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -47,6 +46,7 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.google.android.gms.appindexing.Action;
@@ -130,7 +130,7 @@ public class AttysHRV extends AppCompatActivity {
     private final String ATTYS_SUBDIR = "attys";
     private File attysdir = null;
 
-    ProgressDialog progress = null;
+    ProgressBar progress = null;
 
 
     public class DataRecorder {
@@ -239,16 +239,16 @@ public class AttysHRV extends AppCompatActivity {
                     if (attysComm != null) {
                         attysComm.stop();
                     }
-                    progress.dismiss();
+                    progress.setVisibility(View.GONE);
                     finish();
                     break;
                 case AttysComm.MESSAGE_CONNECTED:
-                    progress.dismiss();
+                    progress.setVisibility(View.GONE);
                     break;
                 case AttysComm.MESSAGE_CONFIGURE:
                     Toast.makeText(getApplicationContext(),
                             "Configuring Attys", Toast.LENGTH_SHORT).show();
-                    progress.dismiss();
+                    progress.setEnabled(false);
                     break;
                 case AttysComm.MESSAGE_RETRY:
                     Toast.makeText(getApplicationContext(),
@@ -266,8 +266,7 @@ public class AttysHRV extends AppCompatActivity {
                             Toast.LENGTH_SHORT).show();
                     break;
                 case AttysComm.MESSAGE_CONNECTING:
-                    progress.setMessage("Connecting");
-                    progress.show();
+                    progress.setVisibility(View.VISIBLE);
             }
         }
     };
@@ -454,8 +453,6 @@ public class AttysHRV extends AppCompatActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        progress = new ProgressDialog(this);
-
         attysdir = new File(Environment.getExternalStorageDirectory().getPath(),
                 ATTYS_SUBDIR);
         if (!attysdir.exists()) {
@@ -468,6 +465,8 @@ public class AttysHRV extends AppCompatActivity {
 
         Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
         setSupportActionBar(myToolbar);
+
+        progress = (ProgressBar) findViewById(R.id.indeterminateBar);
 
         int nChannels = AttysComm.NCHANNELS;
         actualChannelIdx = new int[nChannels];
