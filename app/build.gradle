@@ -47,5 +47,5 @@ dependencies {
 }
 
 dependencies {
-    compile 'com.google.android.gms:play-services-appindexing:9.8.0'
+    compile 'com.google.firebase:firebase-appindexing:11.6.0'
 }

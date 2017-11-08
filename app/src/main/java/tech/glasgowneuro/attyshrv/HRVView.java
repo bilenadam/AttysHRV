@@ -10,9 +10,7 @@ import android.graphics.RadialGradient;
 import android.graphics.Rect;
 import android.graphics.Shader;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
-import android.view.ViewTreeObserver;
 
 import java.util.ArrayList;
 import java.util.ListIterator;
@@ -71,7 +69,7 @@ public class HRVView extends View {
         paintTxt = new Paint();
         paintTxt.setColor(Color.argb(255, 255, 255, 0));
         paintRings = new Paint();
-        HRVValues = new ArrayList<Float>();
+        HRVValues = new ArrayList<>();
 
         maxCircleRadius = Math.min(getHeight(), getWidth()) / 2F;
         maxCircleRadius = 1000F;

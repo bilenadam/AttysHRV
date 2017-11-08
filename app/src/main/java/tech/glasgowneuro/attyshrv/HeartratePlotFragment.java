@@ -69,8 +69,8 @@ public class HeartratePlotFragment extends Fragment {
         view = inflater.inflate(R.layout.heartrateplotfragment, container, false);
 
         // setup the APR Levels plot:
-        bpmPlot = (XYPlot) view.findViewById(R.id.bpmPlotView);
-        statsText = (TextView) view.findViewById(R.id.statsTextView);
+        bpmPlot = view.findViewById(R.id.bpmPlotView);
+        statsText = view.findViewById(R.id.statsTextView);
 
         bpmHistorySeries = new SimpleXYSeries("Heart rate / bpm");
         bpmHistorySeries.useImplicitXVals();

@@ -27,8 +27,6 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Handler;
-import android.os.Message;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
@@ -49,15 +47,12 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import com.google.android.gms.appindexing.Action;
-import com.google.android.gms.appindexing.AppIndex;
-import com.google.android.gms.common.api.GoogleApiClient;
-
 import java.io.File;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -80,7 +75,6 @@ public class AttysHRV extends AppCompatActivity {
 
     private AttysComm attysComm = null;
     private BluetoothDevice btAttysDevice = null;
-    private byte samplingRate = AttysComm.ADC_RATE_250HZ;
 
     UpdatePlotTask updatePlotTask = null;
 
@@ -104,8 +98,6 @@ public class AttysHRV extends AppCompatActivity {
 
     private float ytick = 0;
 
-    private int[] actualChannelIdx;
-
     int ygapForInfo = 0;
 
     // debugging the ECG detector, commented out for production
@@ -119,13 +111,6 @@ public class AttysHRV extends AppCompatActivity {
 
     private String dataFilename = null;
     private byte dataSeparator = 0;
-
-    /**
-     * App Indexing API.
-     * See https://g.co/AppIndexing/AndroidStudio for more information.
-     */
-    private GoogleApiClient client;
-    private Action viewAction;
 
     private final String ATTYS_SUBDIR = "attys";
     private File attysdir = null;
@@ -211,14 +196,14 @@ public class AttysHRV extends AppCompatActivity {
                     break;
             }
             float t = timestamp + samplingInterval;
-            String tmp = String.format("%f%c", t, s);
-            tmp = tmp + String.format("%f%c", I, s);
-            tmp = tmp + String.format("%f%c", II, s);
-            tmp = tmp + String.format("%f%c", III, s);
-            tmp = tmp + String.format("%f%c", aVR, s);
-            tmp = tmp + String.format("%f%c", aVL, s);
-            tmp = tmp + String.format("%f%c", aVF, s);
-            tmp = tmp + String.format("%f", bpm);
+            String tmp = String.format(Locale.US,"%f%c", t, s);
+            tmp = tmp + String.format(Locale.US,"%f%c", I, s);
+            tmp = tmp + String.format(Locale.US,"%f%c", II, s);
+            tmp = tmp + String.format(Locale.US,"%f%c", III, s);
+            tmp = tmp + String.format(Locale.US,"%f%c", aVR, s);
+            tmp = tmp + String.format(Locale.US,"%f%c", aVL, s);
+            tmp = tmp + String.format(Locale.US,"%f%c", aVF, s);
+            tmp = tmp + String.format(Locale.US,"%f", bpm);
             bpm = 0;
 
             if (textdataFileStream != null) {
@@ -229,53 +214,50 @@ public class AttysHRV extends AppCompatActivity {
 
     DataRecorder dataRecorder = new DataRecorder();
 
-    Handler handler = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            switch (msg.what) {
-                case AttysComm.MESSAGE_ERROR:
-                    Toast.makeText(getApplicationContext(),
-                            "Bluetooth connection problem", Toast.LENGTH_SHORT).show();
-                    if (attysComm != null) {
-                        attysComm.stop();
-                    }
-                    progress.setVisibility(View.GONE);
-                    finish();
-                    break;
-                case AttysComm.MESSAGE_CONNECTED:
-                    progress.setVisibility(View.GONE);
-                    break;
-                case AttysComm.MESSAGE_CONFIGURE:
-                    Toast.makeText(getApplicationContext(),
-                            "Configuring Attys", Toast.LENGTH_SHORT).show();
-                    progress.setEnabled(false);
-                    break;
-                case AttysComm.MESSAGE_RETRY:
-                    Toast.makeText(getApplicationContext(),
-                            "Bluetooth - trying to connect. Please be patient.",
-                            Toast.LENGTH_SHORT).show();
-                    break;
-                case AttysComm.MESSAGE_STARTED_RECORDING:
-                    Toast.makeText(getApplicationContext(),
-                            "Started recording data to external storage.",
-                            Toast.LENGTH_SHORT).show();
-                    break;
-                case AttysComm.MESSAGE_STOPPED_RECORDING:
-                    Toast.makeText(getApplicationContext(),
-                            "Finished recording data to external storage.",
-                            Toast.LENGTH_SHORT).show();
-                    break;
-                case AttysComm.MESSAGE_CONNECTING:
-                    progress.setVisibility(View.VISIBLE);
-            }
-        }
-    };
-
-
     AttysComm.MessageListener messageListener = new AttysComm.MessageListener() {
         @Override
-        public void haveMessage(int msg) {
-            handler.sendEmptyMessage(msg);
+        public void haveMessage(final int msg) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    switch (msg) {
+                        case AttysComm.MESSAGE_ERROR:
+                            Toast.makeText(getApplicationContext(),
+                                    "Bluetooth connection problem", Toast.LENGTH_SHORT).show();
+                            if (attysComm != null) {
+                                attysComm.stop();
+                            }
+                            progress.setVisibility(View.GONE);
+                            finish();
+                            break;
+                        case AttysComm.MESSAGE_CONNECTED:
+                            progress.setVisibility(View.GONE);
+                            break;
+                        case AttysComm.MESSAGE_CONFIGURE:
+                            Toast.makeText(getApplicationContext(),
+                                    "Configuring Attys", Toast.LENGTH_SHORT).show();
+                            progress.setEnabled(false);
+                            break;
+                        case AttysComm.MESSAGE_RETRY:
+                            Toast.makeText(getApplicationContext(),
+                                    "Bluetooth - trying to connect. Please be patient.",
+                                    Toast.LENGTH_SHORT).show();
+                            break;
+                        case AttysComm.MESSAGE_STARTED_RECORDING:
+                            Toast.makeText(getApplicationContext(),
+                                    "Started recording data to external storage.",
+                                    Toast.LENGTH_SHORT).show();
+                            break;
+                        case AttysComm.MESSAGE_STOPPED_RECORDING:
+                            Toast.makeText(getApplicationContext(),
+                                    "Finished recording data to external storage.",
+                                    Toast.LENGTH_SHORT).show();
+                            break;
+                        case AttysComm.MESSAGE_CONNECTING:
+                            progress.setVisibility(View.VISIBLE);
+                    }
+                }
+            });
         }
     };
 
@@ -287,7 +269,6 @@ public class AttysHRV extends AppCompatActivity {
             if (attysComm != null) {
                 if (attysComm.hasFatalError()) {
                     // Log.d(TAG,String.format("No bluetooth connection"));
-                    handler.sendEmptyMessage(AttysComm.MESSAGE_ERROR);
                     return;
                 }
             }
@@ -362,7 +343,6 @@ public class AttysHRV extends AppCompatActivity {
                                 tmpMax[nRealChN] = max;
                                 tmpTick[nRealChN] = ytick;
                                 tmpLabels[nRealChN] = labels[0];
-                                actualChannelIdx[nRealChN] = 0;
                                 tmpSample[nRealChN++] = I;
                             }
                             if (attysComm != null) {
@@ -370,7 +350,6 @@ public class AttysHRV extends AppCompatActivity {
                                 tmpMax[nRealChN] = max;
                                 tmpTick[nRealChN] = ytick;
                                 tmpLabels[nRealChN] = labels[1];
-                                actualChannelIdx[nRealChN] = 1;
                                 tmpSample[nRealChN++] = II;
                             }
                             if (attysComm != null) {
@@ -378,7 +357,6 @@ public class AttysHRV extends AppCompatActivity {
                                 tmpMax[nRealChN] = max;
                                 tmpTick[nRealChN] = ytick;
                                 tmpLabels[nRealChN] = labels[2];
-                                actualChannelIdx[nRealChN] = 2;
                                 tmpSample[nRealChN++] = III;
                             }
                             if (attysComm != null) {
@@ -386,7 +364,6 @@ public class AttysHRV extends AppCompatActivity {
                                 tmpMax[nRealChN] = max;
                                 tmpTick[nRealChN] = ytick;
                                 tmpLabels[nRealChN] = labels[3];
-                                actualChannelIdx[nRealChN] = 3;
                                 tmpSample[nRealChN++] = aVR;
                             }
                             if (attysComm != null) {
@@ -394,7 +371,6 @@ public class AttysHRV extends AppCompatActivity {
                                 tmpMax[nRealChN] = max;
                                 tmpTick[nRealChN] = ytick;
                                 tmpLabels[nRealChN] = labels[4];
-                                actualChannelIdx[nRealChN] = 4;
                                 tmpSample[nRealChN++] = aVL;
                             }
                             if (attysComm != null) {
@@ -402,7 +378,6 @@ public class AttysHRV extends AppCompatActivity {
                                 tmpMax[nRealChN] = max;
                                 tmpTick[nRealChN] = ytick;
                                 tmpLabels[nRealChN] = labels[5];
-                                actualChannelIdx[nRealChN] = 5;
                                 tmpSample[nRealChN++] = aVF;
                             }
 
@@ -463,23 +438,17 @@ public class AttysHRV extends AppCompatActivity {
 
         setContentView(R.layout.main_activity_layout);
 
-        Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
+        Toolbar myToolbar = findViewById(R.id.my_toolbar);
         setSupportActionBar(myToolbar);
 
-        progress = (ProgressBar) findViewById(R.id.indeterminateBar);
+        progress = findViewById(R.id.indeterminateBar);
 
-        int nChannels = AttysComm.NCHANNELS;
-        actualChannelIdx = new int[nChannels];
         highpass_II = new Highpass();
         highpass_III = new Highpass();
         iirNotch_II = null;
         iirNotch_III = null;
-        actualChannelIdx[0] = AttysComm.INDEX_Analogue_channel_1;
         gain = 500;
 
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
     }
 
     // this is called whenever the app is starting or re-starting
@@ -507,14 +476,6 @@ public class AttysHRV extends AppCompatActivity {
 
 
     public void startDAQ() {
-
-        client.connect();
-        viewAction = Action.newAction(
-                Action.TYPE_VIEW,
-                "Attys Homepage",
-                Uri.parse("http://www.attys.tech")
-        );
-        AppIndex.AppIndexApi.start(client, viewAction);
 
         btAttysDevice = AttysComm.findAttysBtDevice();
         if (btAttysDevice == null) {
@@ -552,7 +513,7 @@ public class AttysHRV extends AppCompatActivity {
         iirNotch_III.bandStop(notchOrder,
                 attysComm.getSamplingRateInHz(), powerlineHz, notchBW);
 
-        realtimePlotView = (RealtimePlotView) findViewById(R.id.realtimeplotview);
+        realtimePlotView = findViewById(R.id.realtimeplotview);
         realtimePlotView.setMaxChannels(15);
         realtimePlotView.init();
 
@@ -576,7 +537,7 @@ public class AttysHRV extends AppCompatActivity {
                 });
 
 
-        hrvView = (HRVView) findViewById(R.id.hrvview);
+        hrvView = findViewById(R.id.hrvview);
 
         attysComm.start();
 
@@ -676,9 +637,6 @@ public class AttysHRV extends AppCompatActivity {
         }*/
 
         killAttysComm();
-
-        AppIndex.AppIndexApi.end(client, viewAction);
-        client.disconnect();
     }
 
 
@@ -813,13 +771,10 @@ public class AttysHRV extends AppCompatActivity {
                 })
                 .show();
 
-        if (listview != null) {
-            ViewGroup.LayoutParams layoutParams = listview.getLayoutParams();
-            Screensize screensize = new Screensize(getWindowManager());
-            layoutParams.height = screensize.getHeightInPixels() / 2;
-            listview.setLayoutParams(layoutParams);
-        }
-
+        ViewGroup.LayoutParams layoutParams = listview.getLayoutParams();
+        Screensize screensize = new Screensize(getWindowManager());
+        layoutParams.height = screensize.getHeightInPixels() / 2;
+        listview.setLayoutParams(layoutParams);
 
     }
 
@@ -939,12 +894,12 @@ public class AttysHRV extends AppCompatActivity {
 
 
     private void showPlotFragment() {
-        FrameLayout frameLayout = (FrameLayout) findViewById(R.id.mainplotlayout);
+        FrameLayout frameLayout = findViewById(R.id.mainplotlayout);
         frameLayout.setLayoutParams(new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.MATCH_PARENT, 1.0f));
 
-        frameLayout = (FrameLayout) findViewById(R.id.fragment_plot_container);
+        frameLayout = findViewById(R.id.fragment_plot_container);
         frameLayout.setLayoutParams(new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.MATCH_PARENT, 1.5f));
@@ -952,7 +907,7 @@ public class AttysHRV extends AppCompatActivity {
     }
 
     private void hidePlotFragment() {
-        FrameLayout frameLayout = (FrameLayout) findViewById(R.id.mainplotlayout);
+        FrameLayout frameLayout = findViewById(R.id.mainplotlayout);
         frameLayout.setLayoutParams(new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.MATCH_PARENT, 0.0f));
